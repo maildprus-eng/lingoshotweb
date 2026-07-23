@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>LingoShot – Word Shooter</title>
+<link rel="stylesheet" href="all.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <div id="sl" class="screen active">
+    <div class="hdr">
+      <button class="hdr-back" id="sl-back" style="display:none;" onclick="goScreen('sm')">‹</button>
+      <span>LingoShot</span>
+      <small>Select Language</small>
+      <button class="hdr-theme" aria-label="Переключить тему"></button>
+    </div>
+    <div class="lang-list" id="lang-list"></div>
+  </div>
+
+  <div id="sm" class="screen">
+    <div class="hdr">
+      <span>LingoShot</span>
+      <small>Select Game Mode</small>
+      <button class="hdr-theme" onclick="toggleTheme()" aria-label="Переключить тему"></button>
+    </div>
+
+    <div class="dash-progress">
+      <div class="progress-card">
+        <div class="prog-info-side">
+          <div class="prog-label">Your Progress</div>
+          <div class="prog-level-row">
+            <span class="prog-level-val" id="dash-level">Lvl 1</span>
+          </div>
+          <div class="prog-xp-bar-bg">
+            <div class="prog-xp-fill" id="dash-xp-fill"></div>
+          </div>
+          <div class="prog-xp-text" id="dash-xp-text">0 / 100 XP</div>
+        </div>
+        <div class="prog-circle-side">
+          <svg class="prog-circle-svg" viewBox="0 0 80 80">
+            <circle class="prog-circle-bg" cx="40" cy="40" r="36"></circle>
+            <circle class="prog-circle-fill" id="dash-circle-fill" cx="40" cy="40" r="36"></circle>
+          </svg>
+          <span class="prog-percent-val" id="dash-pct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" onclick="goScreen('sd')">
+        <div class="mode-icon"><img src="icons/shooting_tir.svg" width="60%" /></div>
+        <div class="mode-name">Shooting Tir</div>
+      </div>
+      <div class="mode-card" onclick="goScreen('sqd')">
+        <div class="mode-icon"><img src="icons/idiom_quiz.svg" width="70%" /></div>
+        <div class="mode-name">Idiom Quiz</div>
+      </div>
+      <div class="mode-card" onclick="goScreen('ssd')">
+        <div class="mode-icon"><img src="icons/funny_stories.svg" width="60%" /></div>
+        <div class="mode-name">Funny stories</div>
+      </div>
+      <div class="mode-card" onclick="goScreen('sb')">
+        <div class="mode-icon"><img src="icons/morph_bubble.svg" width="60%" /></div>
+        <div class="mode-name">Morph Bubbl</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sb" class="screen">
+    <div class="hdr">
+      <button class="hdr-back" onclick="goScreen('sm')">‹</button>
+      <span>Morph Bubbl</span>
+	  <small>Build words</small>
+      <span class="psh-pill" id="p-pill">1 / 18</span>
+    </div>
+
+    <div class="p-sub-hdr">
+      <div class="psh-progress"><div class="psh-fill" id="p-fill"></div></div>
+    </div>
+
+    <div class="spc-stage">
+      <button class="arrow-btn left" id="p-prev" onclick="goPattern(-1)">‹</button>
+      <div class="card-viewport"><div class="p-card" id="p-card"></div></div>
+      <button class="arrow-btn right" id="p-next" onclick="goPattern(1)">›</button>
+    </div>
+
+    <div class="p-setup">
+      <div class="p-slider-row">
+        <span style="font-size:13px;color:#ffffff;">Items in game</span>
+        <span id="p-val" style="font-size:13px;font-weight:600;color:#588071;padding:2px 9px;border-radius:8px;">10</span>
+      </div>
+      <input type="range" min="5" max="15" value="10" id="p-range" oninput="document.getElementById('p-val').textContent=this.value" style="width:100%;margin-bottom:5px;accent-color:#588071;">
+      <button class="p-start-btn" onclick="startBubbleGame()">Start Game</button>
+    </div>
+  </div>
+
+  <div id="sbg" class="screen">
+    <div class="top">
+      <div class="stat"><b id="bgscore">0</b><small>POINTS</small></div>
+      <div class="center"><b id="bgword">1 / 10</b><div class="bar"><span id="bgbar" style="width:100%;"></span></div></div>
+      <div class="stat" onclick="toggleSound()" style="cursor:pointer; -webkit-user-select:none;">
+        <b id="bsound-icon">🔊</b>
+        <small>SOUND</small>
+      </div>
+      <div class="close" onclick="confirmExit()">×</div>
+    </div>
+    <div class="sbg-sentence-wrap">
+      <div class="sbg-sentence" id="sbg-sentence"></div>
+    </div>
+    <div class="sbg-translation" id="sbg-translation"></div>
+    <div class="sbg-tray" id="sbg-tray"></div>
+    <div class="sbg-bottom">
+      <button class="sbg-next-btn" id="sbg-next" disabled onclick="handleBubbleNext()">Далее</button>
+    </div>
+  </div>
+
+  <div id="ssd" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('sm')">‹</button><span>Funny Stories</span><small>Select Level</small></div><div class="dict-list" id="stories-levels-list"></div></div>
+  <div id="ss" class="screen"><div class="hdr"><button class="hdr-back" id="ss-back" onclick="goScreen('ssd')">‹</button><span>Funny Stories</span><small id="ss-subtitle">Select Story</small></div><div class="dict-list" id="stories-list"></div></div>
+  <div id="sse" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('ss')">‹</button><span>Series Episodes</span><small id="sse-subtitle">Select Episode</small></div><div class="dict-list" id="series-episodes-list"></div></div>
+  <div id="st" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('ss')">‹</button><span>Funny Stories</span><small id="sse-subtitle">Read or listen</small><button class="hdr-x" onclick="speakStory()">🔊</button></div><div class="story-content" id="story-body"></div><div class="word-popup" id="word-popup"><div class="wp-info"><div class="wp-en" id="wp-en">Word</div><div class="wp-tr" id="wp-tr">[transcription]</div><div class="wp-ru" id="wp-ru">Translation</div></div><button class="wp-btn" onclick="addWordFromStory()">Add to Tir</button></div><button class="go-btn" id="to-tir-btn" style="margin:10px; display:none;" onclick="goScreen('scw')">Review added words</button></div>
+  <div id="scw" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('st')">‹</button><span>Story Vocabulary</span><small>Added words</small></div><div class="prev-list" id="story-words-list"></div><button class="go-btn" id="story-go-btn" onclick="startStoryTir()">GO TO TIR!</button></div>
+
+  <div id="sd" class="screen">
+    <div class="hdr"><button class="hdr-back" onclick="goScreen('sm')">‹</button><span>Shooting Tir</span><small>Select Dictionary</small></div>
+    <div class="tabs"><div class="tab active" onclick="swTab('ready')">Ready</div><div class="tab" onclick="swTab('custom')">Custom</div></div>
+
+    <div style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+      <div class="dict-list" id="rdtab"></div>
+      <div class="custom-area" id="ctab">
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:5px;">Select words:</div>
+        <div class="search-box"><input type="text" id="wsearch" placeholder="Search..." oninput="renderCustomList()"/></div>
+        <div style="text-align:right;margin-bottom:8px;"><button onclick="clearCW()" style="background:none;border:none;color:var(--bg-hdr);font-size:12px;text-decoration:underline;cursor:pointer;padding:0; font-weight:bold;">Unselect all</button></div>
+        <div class="cwl" id="allw-list"></div>
+        <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:10px;">Selected: <strong id="cwcnt">0</strong></div>
+      </div>
+    </div>
+
+    <div class="wcrow" id="wcrow"><label>Words in game:</label><input type="range" min="5" max="30" value="5" id="wcs" oninput="document.getElementById('wcv').textContent=this.value"/><div class="wcv" id="wcv">5</div></div>
+    <button class="btn-p" id="sbtn" onclick="goPreview()" disabled>Start Game →</button>
+  </div>
+
+  <div id="sqd" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('sm')">‹</button><span>Idiom Quiz</span><small>Select Difficulty</small></div><div class="dict-list" id="qltab"></div><div class="wcrow"><label>Idioms in game:</label><input type="range" min="5" max="15" value="7" id="qcs" oninput="document.getElementById('qcv').textContent=this.value"/><div class="wcv" id="qcv">7</div></div><button class="btn-p" id="qsbtn" onclick="startQuiz()" disabled>Start Quiz →</button></div>
+  <div id="sp" class="screen"><div class="hdr"><button class="hdr-back" onclick="goScreen('sd')">‹</button><span id="ptitle">Word List</span><small>Words to learn</small></div><div class="prev-list" id="plist"></div><div class="legend"><div class="li"><div class="ld" style="background:#3b6d11"></div>know</div><div class="li"><div class="ld" style="background:#ccc"></div>new</div><div class="li"><div class="ld" style="background:#ba7517"></div>~week</div><div class="li"><div class="ld" style="background:#854f0b"></div>~month</div><div class="li"><div class="ld" style="background:#a32d2d"></div>~half year</div></div><button class="go-btn" onclick="startGame()">GO!</button></div>
+
+  <div id="sq" class="screen">
+    <div class="top">
+      <div class="stat"><b id="qscore">0</b><small>POINTS</small></div>
+      <div class="center"><b id="qword">1/7</b><div class="bar"><span id="qbar" style="width:100%;"></span></div></div>
+      <div class="stat" onclick="toggleSound()"><b id="qsound-icon">🔊</b><small>SOUND</small></div>
+      <div class="close" onclick="confirmExit()">×</div>
+    </div>
+    <div class="idiom-banner">
+      <small>что означает эта идиома?</small>
+      <h1 id="idiom-en">...</h1>
+    </div>
+    <div class="lifelines">
+      <div class="life-btn" id="life-call" onclick="useLife('call')">
+        <span class="life-icon">📞</span><span>CALL</span>
+        <div class="life-tip" id="tip-call"></div>
+      </div>
+      <div class="life-btn" id="life-50" onclick="useLife('50')">
+        <span class="life-icon">🌗</span><span>50/50</span>
+      </div>
+      <div class="life-btn" id="life-hall" onclick="useLife('hall')">
+        <span class="life-icon">👥</span><span>HELP</span>
+        <div class="life-tip" id="tip-hall"></div>
+      </div>
+    </div>
+    <div class="quiz-area" id="answers"></div>
+    <div style="padding:14px;"><button class="next-btn" id="nextBtn" onclick="nextQuestion()">Далее →</button></div>
+  </div>
+
+  <div id="sg" class="screen">
+    <div class="top">
+      <div class="stat"><b id="gscore">0</b><small>POINTS</small></div>
+      <div class="center"><b id="gword">1/10</b><div class="bar"><span id="tbar"></span></div></div>
+      <div class="stat" onclick="toggleSound()" style="cursor:pointer; -webkit-user-select:none;">
+        <b id="sound-icon">🔊</b>
+        <small id="sound-text">SOUND: ON</small>
+      </div>
+      <div class="close" onclick="confirmExit()">×</div>
+    </div>
+    <div class="word" id="ruword_container">
+      <div id="ruwd"><h1>ARE YOU READY?</h1><small>TOUCH LOAD</small></div>
+    </div>
+    <div class="range" id="arena">
+      <div class="rail"></div>
+      <canvas id="hit-canvas" style="position:absolute; inset:0; pointer-events:none; z-index:10;"></canvas>
+      <div id="moving-unit" class="moving-unit">
+        <div class="carriage"><span class="bolt"></span></div>
+        <div class="arm"></div>
+        <div class="target"><div id="sight" class="sight"><div class="sight-dot"></div></div></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="speed-row" style="padding:0 12px 10px; display:flex; align-items:center; gap:12px;">
+        <label style="color:var(--green); font-size:10px; font-weight:700; letter-spacing:1px; opacity:0.7; white-space:nowrap;">SPEED:</label>
+        <input type="range" min="0" max="6000" step="250" value="3000" id="gspeed" style="flex:1; accent-color:var(--green); cursor:pointer;">
+      </div>
+      <div class="input-row">
+        <div class="typedbox" id="tbox" onclick="handleTboxClick(event)"></div>
+        <button class="btn-main btn-del-main" onclick="kbdKey('◀')">◀</button>
+        <button id="kfireBtn" class="btn-main btn-load" onclick="handleFireBtn()">LOAD</button>
+      </div>
+      <div class="kbd"><div class="kr" id="kr0"></div><div class="kr" id="kr1"></div><div class="kr" id="kr2"></div><div class="kr" id="kr3"></div></div>
+    </div>
+  </div>
+
+  <div id="sa" class="screen ad-screen">
+    <div class="ad-timer-wrap">
+      <div id="ad-timer">10</div>
+      <div class="ad-timer-label">sec</div>
+    </div>
+    <div class="ad-content">
+      <div class="ad-label">PROMOTION</div>
+      <div class="ad-banner-box">
+        <img src="icons/promo_banner.png" alt="LingoShot Pro" class="ad-img-main">
+      </div>
+      <h2 class="ad-title">LingoShot for Android</h2>
+      <p class="ad-desc">Get the full experience with offline mode, smart widgets, and advanced statistics!</p>
+
+      <a href="https://play.google.com/store/apps/details?id=com.example.mitir" target="_blank" class="gp-link">
+        <img src="icons/google_play.png" alt="Get it on Google Play" class="gp-btn-img">
+      </a>
+    </div>
+  </div>
+
+  <div id="sr" class="screen">
+    <div class="hdr"><button class="hdr-x" onclick="goScreen('sm')">✕</button>Results</div>
+    <div id="res-auth-box" class="auth-component"></div>
+    <div class="res-body">
+      <div class="r-title" id="rtitle">Great!</div>
+      <div id="res-msg" style="font-size:14px; text-align:center; color:#444; margin:-5px 0 10px; padding:0 20px; line-height:1.4;">
+       You've earned <b id="last-score-val">0</b> points.<br>
+        <span id="ad-info-text">Earn 150 points to disable ads.</span>
+      </div>
+      <div class="rgrid">
+        <div class="rcard"><div class="v" id="rhits">0</div><div class="l">hits</div></div>
+        <div class="rcard"><div class="v" id="rmiss">0</div><div class="l">misses</div></div>
+        <div class="rcard"><div class="v" id="racc">0%</div><div class="l">accuracy</div></div>
+        <div class="rcard"><div class="v" id="rtime">0s</div><div class="l">time</div></div>
+      </div>
+      <div class="rmist" id="rmb"><div class="slbl">Errors for review</div><div id="rml"></div></div>
+      <div class="leaderboard-box"><div class="lb-header">TOP PLAYERS (GLOBAL)</div><div id="res-lb-list" class="lb-list"></div></div>
+    </div>
+    <div class="ract">
+      <button class="btn-p" style="margin:0;width:100%;" onclick="retryGame()">Again</button>
+      <button class="btn-s" onclick="goScreen('sm')">Change game mode</button>
+    </div>
+  </div>
+
+  <div id="su" class="screen">
+    <div class="hdr">Profile & Leaders</div>
+    <div class="res-body">
+      <div id="main-auth-box" class="auth-component"></div>
+      <div class="leaderboard-box"><div class="lb-header">TOP PLAYERS (GLOBAL)</div><div id="main-lb-list" class="lb-list"></div></div>
+    </div>
+  </div>
+
+  <div id="nav-footer">
+    <div class="nav-item" id="nav-lang" onclick="goScreen('sl')">
+      <svg viewBox="0 0 24 24"><path d="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,19.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.65L19.12,17H15.88Z"/></svg>
+    </div>
+    <div class="nav-item" id="nav-home" onclick="goScreen('sm')">
+      <svg viewBox="0 0 24 24"><path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/></svg>
+    </div>
+    <div class="nav-item" id="nav-user" onclick="goScreen('su')">
+      <svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/></svg>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="idioms.js"></script>
+<script src="stories.js"></script>
+<script src="series.js"></script>
+<script src="lemmatizer.js"></script>
+<script src="patterns.js"></script>
+<script src="bubble_sentences.js"></script>
+<script src="user.js"></script>
+<script src="functions.js"></script>
+</body>
+</html>
